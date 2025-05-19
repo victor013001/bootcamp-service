@@ -1,6 +1,6 @@
 spring:
   webflux:
-    base-path: /archetype
+    base-path: /bootcamp-service
   r2dbc:
     url: r2dbc:${DB}://${DB_URL}:${DB_PORT}/${DB_SCHEMA}
     username: ${DB_USERNAME}

@@ -1,6 +1,6 @@
-package com.pragma.challenge.archetype_gradle.infrastructure.entrypoints.mapper;
+package com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.mapper;
 
-import com.pragma.challenge.archetype_gradle.infrastructure.entrypoints.dto.DefaultServerResponse;
+import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.dto.DefaultServerResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 

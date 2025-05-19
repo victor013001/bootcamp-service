@@ -1,12 +1,12 @@
-package com.pragma.challenge.archetype_gradle;
+package com.pragma.challenge.bootcamp_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ArchetypeGradleApplication {
+public class BootcampServiceApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(ArchetypeGradleApplication.class, args);
+    SpringApplication.run(BootcampServiceApplication.class, args);
   }
 }

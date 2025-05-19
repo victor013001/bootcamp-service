@@ -1,4 +1,4 @@
-package com.pragma.challenge.archetype_gradle.domain.constants;
+package com.pragma.challenge.bootcamp_service.domain.constants;
 
 import lombok.experimental.UtilityClass;
 

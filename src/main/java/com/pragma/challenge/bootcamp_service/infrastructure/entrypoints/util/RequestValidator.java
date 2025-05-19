@@ -1,6 +1,6 @@
-package com.pragma.challenge.archetype_gradle.infrastructure.entrypoints.util;
+package com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.util;
 
-import com.pragma.challenge.archetype_gradle.domain.exceptions.standard_exception.BadRequest;
+import com.pragma.challenge.bootcamp_service.domain.exceptions.standard_exception.BadRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import java.util.List;

@@ -1,11 +1,11 @@
-package com.pragma.challenge.archetype_gradle.infrastructure.entrypoints.handler;
+package com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.handler;
 
 import java.time.LocalDateTime;
 
-import com.pragma.challenge.archetype_gradle.domain.exceptions.StandardError;
-import com.pragma.challenge.archetype_gradle.domain.exceptions.StandardException;
-import com.pragma.challenge.archetype_gradle.infrastructure.entrypoints.util.DefaultServerResponseContext;
-import com.pragma.challenge.archetype_gradle.domain.enums.ServerResponses;
+import com.pragma.challenge.bootcamp_service.domain.exceptions.StandardError;
+import com.pragma.challenge.bootcamp_service.domain.exceptions.StandardException;
+import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.util.DefaultServerResponseContext;
+import com.pragma.challenge.bootcamp_service.domain.enums.ServerResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;

@@ -1,4 +1,4 @@
-package com.pragma.challenge.archetype_gradle.domain.exceptions;
+package com.pragma.challenge.bootcamp_service.domain.exceptions;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;

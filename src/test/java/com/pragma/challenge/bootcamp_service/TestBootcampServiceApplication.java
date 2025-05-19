@@ -1,10 +1,10 @@
-package com.pragma.challenge.archetype_gradle;
+package com.pragma.challenge.bootcamp_service;
 
 import org.springframework.boot.SpringApplication;
 
-public class TestArchetypeGradleApplication {
+public class TestBootcampServiceApplication {
   public static void main(String[] args) {
-    SpringApplication.from(ArchetypeGradleApplication::main)
+    SpringApplication.from(BootcampServiceApplication::main)
         .with(TestcontainersConfiguration.class)
         .run(args);
   }

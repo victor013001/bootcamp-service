@@ -1,6 +1,6 @@
-package com.pragma.challenge.archetype_gradle.domain.enums;
+package com.pragma.challenge.bootcamp_service.domain.enums;
 
-import com.pragma.challenge.archetype_gradle.domain.constants.Constants;
+import com.pragma.challenge.bootcamp_service.domain.constants.Constants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,8 +1,8 @@
-package com.pragma.challenge.archetype_gradle.domain.exceptions;
+package com.pragma.challenge.bootcamp_service.domain.exceptions;
 
 import java.time.LocalDateTime;
 
-import com.pragma.challenge.archetype_gradle.domain.enums.ServerResponses;
+import com.pragma.challenge.bootcamp_service.domain.enums.ServerResponses;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
