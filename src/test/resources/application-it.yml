@@ -1,16 +1,3 @@
-spring:
-  webflux:
-    base-path: /bootcamp-service
-  r2dbc:
-    url: r2dbc:${DB}://${DB_URL}:${DB_PORT}/${DB_SCHEMA}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-  flyway:
-    enabled: true
-    url: jdbc:${DB}://${DB_URL}:${DB_PORT}/${DB_SCHEMA}
-    user: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-
 management:
   endpoints:
     web:
@@ -39,7 +26,7 @@ management:
       enabled: false
 
 profile-service:
-  base-url: http://localhost:9090/profile-service/
+  base-url: http://localhost:${wiremock.server.port}
   timeout: 1000
 
 resilience4j.circuitbreaker:
