@@ -88,3 +88,6 @@ resilience4j:
       profileServiceBulkhead:
         maxConcurrentCalls: 5
         maxWaitDuration: 1s
+
+server:
+  port: 8082

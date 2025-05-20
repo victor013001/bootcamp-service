@@ -2,17 +2,20 @@ package com.pragma.challenge.bootcamp_service.domain.usecase;
 
 import com.pragma.challenge.bootcamp_service.domain.api.BootcampServicePort;
 import com.pragma.challenge.bootcamp_service.domain.exceptions.standard_exception.ProfileNotFound;
+import com.pragma.challenge.bootcamp_service.domain.mapper.BootcampProfileMapper;
 import com.pragma.challenge.bootcamp_service.domain.model.Bootcamp;
+import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfile;
 import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfileRelation;
 import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfiles;
 import com.pragma.challenge.bootcamp_service.domain.spi.BootcampPersistencePort;
 import com.pragma.challenge.bootcamp_service.domain.spi.ProfileServiceGateway;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.reactive.TransactionalOperator;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -21,10 +24,25 @@ public class BootcampUseCase implements BootcampServicePort {
   private final BootcampPersistencePort bootcampPersistencePort;
   private final ProfileServiceGateway profileServiceGateway;
   private final TransactionalOperator transactionalOperator;
+  private final BootcampProfileMapper bootcampProfileMapper;
 
   @Override
   public Mono<Bootcamp> registerBootcamp(Bootcamp bootcamp) {
     return registerWithProfiles(bootcamp).as(transactionalOperator::transactional);
+  }
+
+  @Override
+  public Flux<BootcampProfile> getBootcamps(PageRequest pageRequest) {
+    return bootcampPersistencePort
+        .findAllBy(pageRequest)
+        .flatMap(
+            bootcampProfile ->
+                profileServiceGateway
+                    .getProfiles(bootcampProfile.id())
+                    .map(
+                        profiles ->
+                            bootcampProfileMapper.toBootcampProfileWithProfiles(
+                                bootcampProfile, profiles)));
   }
 
   private Mono<Bootcamp> registerWithProfiles(Bootcamp bootcamp) {

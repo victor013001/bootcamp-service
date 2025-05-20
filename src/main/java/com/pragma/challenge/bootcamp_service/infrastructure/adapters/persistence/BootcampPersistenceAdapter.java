@@ -1,12 +1,15 @@
 package com.pragma.challenge.bootcamp_service.infrastructure.adapters.persistence;
 
 import com.pragma.challenge.bootcamp_service.domain.model.Bootcamp;
+import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfile;
 import com.pragma.challenge.bootcamp_service.domain.spi.BootcampPersistencePort;
 import com.pragma.challenge.bootcamp_service.infrastructure.adapters.persistence.mapper.BootcampEntityMapper;
 import com.pragma.challenge.bootcamp_service.infrastructure.adapters.persistence.repository.BootcampRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -30,5 +33,10 @@ public class BootcampPersistenceAdapter implements BootcampPersistencePort {
     return bootcampRepository
         .save(bootcampEntityMapper.toEntity(bootcamp))
         .map(bootcampEntityMapper::toModel);
+  }
+
+  @Override
+  public Flux<BootcampProfile> findAllBy(PageRequest pageRequest) {
+    return bootcampRepository.findAllBy(pageRequest).map(bootcampEntityMapper::toBootcampProfile);
   }
 }

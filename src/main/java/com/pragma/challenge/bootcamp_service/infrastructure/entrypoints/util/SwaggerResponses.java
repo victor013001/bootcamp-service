@@ -1,5 +1,6 @@
 package com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.util;
 
+import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfile;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,5 +16,12 @@ public final class SwaggerResponses {
   @AllArgsConstructor
   public static class DefaultMessageResponse {
     private String data;
+  }
+
+  @Data
+  @Schema(name = "DefaultBootcampProfileResponse")
+  @AllArgsConstructor
+  public static class DefaultBootcampProfileResponse {
+    private BootcampProfile data;
   }
 }

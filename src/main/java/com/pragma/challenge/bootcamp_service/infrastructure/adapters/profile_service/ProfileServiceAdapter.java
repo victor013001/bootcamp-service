@@ -4,12 +4,15 @@ import com.pragma.challenge.bootcamp_service.domain.constants.Constants;
 import com.pragma.challenge.bootcamp_service.domain.exceptions.standard_exception.GatewayBadRequest;
 import com.pragma.challenge.bootcamp_service.domain.exceptions.standard_exception.GatewayError;
 import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfiles;
+import com.pragma.challenge.bootcamp_service.domain.model.ProfileTechnology;
 import com.pragma.challenge.bootcamp_service.domain.spi.ProfileServiceGateway;
 import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.dto.DefaultServerResponse;
 import io.github.resilience4j.bulkhead.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.reactor.retry.RetryOperator;
 import io.github.resilience4j.retry.Retry;
+import java.util.List;
+import java.util.concurrent.TimeoutException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -20,9 +23,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriBuilder;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
-import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Component
@@ -95,6 +95,41 @@ public class ProfileServiceAdapter implements ProfileServiceGateway {
             ignore ->
                 log.error("{} Error creating the relation for: {}.", LOG_PREFIX, bootcampProfiles))
         .then();
+  }
+
+  @Override
+  @CircuitBreaker(name = "profileService", fallbackMethod = "fallback")
+  public Mono<List<ProfileTechnology>> getProfiles(Long bootcampId) {
+    log.info(
+        "{} Starting find profiles for bootcamp id: {} process in Profile Service.",
+        LOG_PREFIX,
+        bootcampId);
+    return webClient
+        .get()
+        .uri(
+            uriBuilder ->
+                uriBuilder
+                    .path(BASE_PATH)
+                    .queryParam(Constants.BOOTCAMP_ID_PARAM, bootcampId)
+                    .build())
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.error(GatewayBadRequest::new))
+        .onStatus(HttpStatusCode::is5xxServerError, response -> Mono.error(GatewayError::new))
+        .bodyToMono(
+            new ParameterizedTypeReference<DefaultServerResponse<List<ProfileTechnology>>>() {})
+        .map(DefaultServerResponse::data)
+        .transformDeferred(RetryOperator.of(retry))
+        .transformDeferred(mono -> Mono.defer(() -> bulkhead.executeSupplier(() -> mono)))
+        .doOnTerminate(
+            () ->
+                log.info(
+                    "{} Completed find profiles for bootcamp id: {} process in Profile Service.",
+                    LOG_PREFIX,
+                    bootcampId))
+        .doOnError(
+            error ->
+                log.error(
+                    "{} Error finding the profiles for bootcamp id: {}", LOG_PREFIX, bootcampId));
   }
 
   public Mono<Boolean> fallback(Throwable t) {
