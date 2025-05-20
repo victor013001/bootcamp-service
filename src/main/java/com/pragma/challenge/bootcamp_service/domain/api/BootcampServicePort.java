@@ -10,4 +10,6 @@ public interface BootcampServicePort {
   Mono<Bootcamp> registerBootcamp(Bootcamp bootcamp);
 
   Flux<BootcampProfile> getBootcamps(PageRequest pageRequest);
+
+  Mono<Void> delete(Long bootcampId);
 }

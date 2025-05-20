@@ -39,4 +39,16 @@ public class BootcampPersistenceAdapter implements BootcampPersistencePort {
   public Flux<BootcampProfile> findAllBy(PageRequest pageRequest) {
     return bootcampRepository.findAllBy(pageRequest).map(bootcampEntityMapper::toBootcampProfile);
   }
+
+  @Override
+  public Mono<Boolean> existsById(Long bootcampId) {
+    log.info("{} Checking id bootcamp with id: {} exists.", LOG_PREFIX, bootcampId);
+    return bootcampRepository.existsById(bootcampId);
+  }
+
+  @Override
+  public Mono<Void> delete(Long bootcampId) {
+    log.info("{} Deleting bootcamp with id: {}", LOG_PREFIX, bootcampId);
+    return bootcampRepository.deleteById(bootcampId);
+  }
 }

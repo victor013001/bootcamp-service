@@ -132,6 +132,37 @@ public class ProfileServiceAdapter implements ProfileServiceGateway {
                     "{} Error finding the profiles for bootcamp id: {}", LOG_PREFIX, bootcampId));
   }
 
+  @Override
+  @CircuitBreaker(name = "profileService", fallbackMethod = "fallback")
+  public Mono<Void> deleteBootcampProfiles(Long bootcampId) {
+    log.info(
+        "{} Starting delete profiles for bootcamp id: {} process in Profile Service.",
+        LOG_PREFIX,
+        bootcampId);
+    return webClient
+        .delete()
+        .uri(BASE_PATH + "/{id}", bootcampId)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.error(GatewayBadRequest::new))
+        .onStatus(HttpStatusCode::is5xxServerError, response -> Mono.error(GatewayError::new))
+        .bodyToMono(new ParameterizedTypeReference<DefaultServerResponse<String>>() {})
+        .map(DefaultServerResponse::data)
+        .doOnNext(
+            exists -> log.info("{} Received Profile Service response: {}", LOG_PREFIX, exists))
+        .transformDeferred(RetryOperator.of(retry))
+        .transformDeferred(mono -> Mono.defer(() -> bulkhead.executeSupplier(() -> mono)))
+        .doOnTerminate(
+            () ->
+                log.info(
+                    "{} Completed delete profiles for bootcamp process in Profile Service.",
+                    LOG_PREFIX))
+        .doOnError(
+            ignore ->
+                log.error(
+                    "{} Error deleting the profiles for bootcamp id: {}.", LOG_PREFIX, bootcampId))
+        .then();
+  }
+
   public Mono<Boolean> fallback(Throwable t) {
     log.warn("{} Fallback triggered for Profile Service", LOG_PREFIX);
     return Mono.defer(() -> Mono.justOrEmpty(t instanceof TimeoutException ? Boolean.FALSE : null))

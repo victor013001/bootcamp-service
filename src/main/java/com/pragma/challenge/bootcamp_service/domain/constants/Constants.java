@@ -28,4 +28,7 @@ public class Constants {
   public static final String ASC = "asc";
   public static final List<String> SORT_BY_OPTIONS = List.of(NAME_PARAM, PROFILE_PARAM);
   public static final String BOOTCAMP_ID_PARAM = "bootcampId";
+  public static final String BOOTCAMP_NOT_FOUND_MSG = "The bootcamp provided was not found.";
+  public static final String BOOTCAMP_DELETED_MSG = "The bootcamp was deleted successfully.";
+  public static final String ID_PATH_VARIABLE = "id";
 }

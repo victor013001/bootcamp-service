@@ -10,4 +10,8 @@ public interface BootcampPersistencePort {
   Mono<Bootcamp> save(Bootcamp bootcamp);
 
   Flux<BootcampProfile> findAllBy(PageRequest pageRequest);
+
+  Mono<Void> delete(Long bootcampId);
+
+  Mono<Boolean> existsById(Long bootcampId);
 }

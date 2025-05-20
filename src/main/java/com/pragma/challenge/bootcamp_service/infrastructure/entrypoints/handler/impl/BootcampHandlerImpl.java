@@ -91,4 +91,20 @@ public class BootcampHandlerImpl implements BootcampHandler {
                   .bodyValue(defaultServerResponseMapper.toResponse(bootcampProfile));
             });
   }
+
+  @Override
+  public Mono<ServerResponse> deleteBootcamp(ServerRequest request) {
+    String id = request.pathVariable(Constants.ID_PATH_VARIABLE);
+    return Mono.just(requestValidator.toLong(id))
+        .flatMap(
+            bootcampId -> {
+              log.info("{} Deleting bootcamp with id: {}.", LOG_PREFIX, bootcampId);
+              return bootcampServicePort.delete(bootcampId);
+            })
+        .then(
+            ServerResponse.status(ServerResponses.BOOTCAMP_DELETED.getHttpStatus())
+                .bodyValue(
+                    defaultServerResponseMapper.toResponse(
+                        ServerResponses.BOOTCAMP_DELETED.getMessage())));
+  }
 }
