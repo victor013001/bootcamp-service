@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.pragma.challenge.bootcamp_service.domain.constants.Constants;
 import com.pragma.challenge.bootcamp_service.domain.enums.ServerResponses;
 import com.pragma.challenge.bootcamp_service.domain.exceptions.StandardError;
 import com.pragma.challenge.bootcamp_service.infrastructure.adapters.persistence.entity.BootcampEntity;
@@ -125,6 +126,30 @@ public class BootcampRouterRestIT {
               var error = exchangeResult.getResponseBody();
               assertNotNull(error);
               assertEquals(ServerResponses.PROFILE_NOT_FOUND.getMessage(), error.getDescription());
+            });
+  }
+
+  @Test
+  void getBootcamps() {
+    WireMock.stubFor(
+        WireMock.get(WireMock.urlPathEqualTo(PROFILE_SERVICE_PATH))
+            .withQueryParam(Constants.BOOTCAMP_ID_PARAM, WireMock.matching(".*"))
+            .willReturn(
+                WireMock.aResponse()
+                    .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .withBodyFile("profileByBootcampId.json")));
+
+    webTestClient
+        .get()
+        .uri(BASE_PATH)
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody(DefaultServerResponse.class)
+        .consumeWith(
+            exchangeResult -> {
+              var response = exchangeResult.getResponseBody();
+              assertNotNull(response);
             });
   }
 }

@@ -1,0 +1,65 @@
+{
+  "data": [
+    {
+      "id": 21,
+      "name": "QA",
+      "description": "Ensures software products meet quality standards before release",
+      "technologies": [
+        {
+          "id": 9,
+          "name": "Node.js"
+        },
+        {
+          "id": 11,
+          "name": "Java"
+        },
+        {
+          "id": 12,
+          "name": "SQL"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "name": "Backend Node",
+      "description": "Backend developer with Node as main technology",
+      "technologies": [
+        {
+          "id": 9,
+          "name": "Node.js"
+        },
+        {
+          "id": 10,
+          "name": "React"
+        },
+        {
+          "id": 14,
+          "name": "npm"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "name": "Backend Java",
+      "description": "Backend developer with Java as main technology",
+      "technologies": [
+        {
+          "id": 9,
+          "name": "Node.js"
+        },
+        {
+          "id": 10,
+          "name": "React"
+        },
+        {
+          "id": 11,
+          "name": "Java"
+        },
+        {
+          "id": 12,
+          "name": "SQL"
+        }
+      ]
+    }
+  ]
+}

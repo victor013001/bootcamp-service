@@ -1,6 +1,7 @@
 package com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.handler.impl;
 
 import com.pragma.challenge.bootcamp_service.domain.api.BootcampServicePort;
+import com.pragma.challenge.bootcamp_service.domain.constants.Constants;
 import com.pragma.challenge.bootcamp_service.domain.enums.ServerResponses;
 import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.dto.BootcampDto;
 import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.handler.BootcampHandler;
@@ -9,6 +10,9 @@ import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.mapper.D
 import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.util.RequestValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -56,5 +60,35 @@ public class BootcampHandlerImpl implements BootcampHandler {
                     .bodyValue(
                         defaultServerResponseMapper.toResponse(
                             ServerResponses.BOOTCAMP_CREATED.getMessage())));
+  }
+
+  @Override
+  public Mono<ServerResponse> getBootcamps(ServerRequest request) {
+    String pageNumber =
+        request.queryParam(Constants.PAGE_NUMBER_PARAM).orElse(Constants.PAGE_NUMBER_DEFAULT);
+    String pageSize =
+        request.queryParam(Constants.PAGE_SIZE_PARAM).orElse(Constants.PAGE_SIZE_DEFAULT);
+    String sortDirectionParam = request.queryParam(Constants.SORT_DIRECTION).orElse(Constants.ASC);
+    String sortByParam = request.queryParam(Constants.SORT_BY).orElse(Constants.NAME_PARAM);
+    log.info(
+        "{} Getting profiles sorted by: {} with direction: {}",
+        LOG_PREFIX,
+        sortByParam,
+        sortDirectionParam);
+    return bootcampServicePort
+        .getBootcamps(
+            PageRequest.of(
+                requestValidator.toInt(pageNumber),
+                requestValidator.toInt(pageSize),
+                Sort.by(
+                    requestValidator.toSortDirection(sortDirectionParam),
+                    requestValidator.validate(sortByParam))))
+        .collectList()
+        .flatMap(
+            bootcampProfile -> {
+              log.info("{} Bootcamp page: {} with size: {}", LOG_PREFIX, pageNumber, pageSize);
+              return ServerResponse.status(HttpStatus.OK)
+                  .bodyValue(defaultServerResponseMapper.toResponse(bootcampProfile));
+            });
   }
 }
