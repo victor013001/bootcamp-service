@@ -152,4 +152,29 @@ public class BootcampRouterRestIT {
               assertNotNull(response);
             });
   }
+
+  @Test
+  void deleteBootcamp() {
+    var bootcampId = 1L;
+    WireMock.stubFor(
+        WireMock.delete(WireMock.urlPathMatching(PROFILE_SERVICE_PATH + "/1"))
+            .willReturn(
+                WireMock.aResponse()
+                    .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .withBodyFile("deletedProfiles.json")));
+
+    webTestClient
+        .delete()
+        .uri(BASE_PATH + "/{id}", bootcampId)
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody(DefaultServerResponse.class)
+        .consumeWith(
+            exchangeResult -> {
+              var response = exchangeResult.getResponseBody();
+              assertNotNull(response);
+              System.out.println(response);
+            });
+  }
 }

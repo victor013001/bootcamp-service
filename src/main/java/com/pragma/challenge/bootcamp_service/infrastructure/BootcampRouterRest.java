@@ -117,12 +117,55 @@ public class BootcampRouterRest {
                           @Content(
                               mediaType = MediaType.APPLICATION_JSON_VALUE,
                               schema = @Schema(implementation = StandardError.class)))
+                })),
+    @RouterOperation(
+        path = "/api/v1/bootcamp/{id}",
+        method = RequestMethod.DELETE,
+        beanClass = BootcampHandler.class,
+        beanMethod = "deleteBootcamp",
+        operation =
+            @Operation(
+                operationId = "deleteBootcamp",
+                summary = "Delete a bootcamp by ID",
+                parameters = {
+                  @Parameter(
+                      in = ParameterIn.PATH,
+                      name = "id",
+                      required = true,
+                      description = "ID of the bootcamp to delete")
+                },
+                responses = {
+                  @ApiResponse(
+                      responseCode = "200",
+                      description = Constants.BOOTCAMP_DELETED_MSG,
+                      content =
+                          @Content(
+                              mediaType = MediaType.APPLICATION_JSON_VALUE,
+                              schema =
+                                  @Schema(
+                                      implementation =
+                                          SwaggerResponses.DefaultMessageResponse.class))),
+                  @ApiResponse(
+                      responseCode = "404",
+                      description = Constants.BOOTCAMP_NOT_FOUND_MSG,
+                      content =
+                          @Content(
+                              mediaType = MediaType.APPLICATION_JSON_VALUE,
+                              schema = @Schema(implementation = StandardError.class))),
+                  @ApiResponse(
+                      responseCode = "500",
+                      description = Constants.SERVER_ERROR_MSG,
+                      content =
+                          @Content(
+                              mediaType = MediaType.APPLICATION_JSON_VALUE,
+                              schema = @Schema(implementation = StandardError.class)))
                 }))
   })
   public RouterFunction<ServerResponse> routerFunction(BootcampHandler bootcampHandler) {
     return nest(
         path("/api/v1/bootcamp"),
         route(RequestPredicates.POST(""), bootcampHandler::createBootcamp)
-            .andRoute(RequestPredicates.GET(""), bootcampHandler::getBootcamps));
+            .andRoute(RequestPredicates.GET(""), bootcampHandler::getBootcamps)
+            .andRoute(RequestPredicates.DELETE("/{id}"), bootcampHandler::deleteBootcamp));
   }
 }

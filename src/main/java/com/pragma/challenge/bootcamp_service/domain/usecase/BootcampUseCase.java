@@ -45,6 +45,17 @@ public class BootcampUseCase implements BootcampServicePort {
                                 bootcampProfile, profiles)));
   }
 
+  @Override
+  public Mono<Void> delete(Long bootcampId) {
+    return bootcampPersistencePort
+        .existsById(bootcampId)
+        .filter(Boolean.TRUE::equals)
+        .switchIfEmpty(Mono.error(ProfileNotFound::new))
+        .flatMap(exists -> bootcampPersistencePort.delete(bootcampId))
+        .then(profileServiceGateway.deleteBootcampProfiles(bootcampId))
+        .as(transactionalOperator::transactional);
+  }
+
   private Mono<Bootcamp> registerWithProfiles(Bootcamp bootcamp) {
     return profileServiceGateway
         .profilesExists(bootcamp.profileIds())

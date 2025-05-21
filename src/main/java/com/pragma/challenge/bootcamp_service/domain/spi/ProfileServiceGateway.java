@@ -11,4 +11,6 @@ public interface ProfileServiceGateway {
   Mono<Void> createRelation(BootcampProfiles bootcampProfiles);
 
   Mono<List<ProfileTechnology>> getProfiles(Long bootcampId);
+
+  Mono<Void> deleteBootcampProfiles(Long bootcampId);
 }

@@ -8,4 +8,6 @@ public interface BootcampHandler {
   Mono<ServerResponse> createBootcamp(ServerRequest request);
 
   Mono<ServerResponse> getBootcamps(ServerRequest request);
+
+  Mono<ServerResponse> deleteBootcamp(ServerRequest request);
 }
