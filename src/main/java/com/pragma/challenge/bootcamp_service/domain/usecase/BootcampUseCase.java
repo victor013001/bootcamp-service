@@ -56,6 +56,14 @@ public class BootcampUseCase implements BootcampServicePort {
         .as(transactionalOperator::transactional);
   }
 
+  @Override
+  public Mono<Boolean> existsById(List<Long> bootcampIds) {
+    return Flux.fromIterable(bootcampIds)
+        .flatMap(id -> bootcampPersistencePort.existsById(id).flatMap(Mono::just))
+        .any(result -> !result)
+        .flatMap(foundFalse -> Mono.just(!foundFalse));
+  }
+
   private Mono<Bootcamp> registerWithProfiles(Bootcamp bootcamp) {
     return profileServiceGateway
         .profilesExists(bootcamp.profileIds())

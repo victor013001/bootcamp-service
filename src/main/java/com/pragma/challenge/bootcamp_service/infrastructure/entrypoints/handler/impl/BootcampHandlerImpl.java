@@ -107,4 +107,21 @@ public class BootcampHandlerImpl implements BootcampHandler {
                     defaultServerResponseMapper.toResponse(
                         ServerResponses.BOOTCAMP_DELETED.getMessage())));
   }
+
+  @Override
+  public Mono<ServerResponse> exists(ServerRequest request) {
+    return Mono.justOrEmpty(
+            request.queryParams().get(Constants.ID_PATH_VARIABLE).stream()
+                .map(Long::parseLong)
+                .toList())
+        .flatMap(
+            bootcampIds -> {
+              log.info("{} Checking if bootcamps with ids {} exist.", LOG_PREFIX, bootcampIds);
+              return bootcampServicePort.existsById(bootcampIds);
+            })
+        .flatMap(
+            exists ->
+                ServerResponse.status(HttpStatus.OK)
+                    .bodyValue(defaultServerResponseMapper.toResponse(exists)));
+  }
 }

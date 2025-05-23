@@ -24,4 +24,11 @@ public final class SwaggerResponses {
   public static class DefaultBootcampProfileResponse {
     private BootcampProfile data;
   }
+
+  @Data
+  @Schema(name = "DefaultBooleanResponse")
+  @AllArgsConstructor
+  public static class DefaultBooleanResponse {
+    private Boolean data;
+  }
 }

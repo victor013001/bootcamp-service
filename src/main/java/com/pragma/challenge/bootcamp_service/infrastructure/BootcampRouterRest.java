@@ -12,6 +12,7 @@ import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.util.Swa
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -159,13 +160,57 @@ public class BootcampRouterRest {
                           @Content(
                               mediaType = MediaType.APPLICATION_JSON_VALUE,
                               schema = @Schema(implementation = StandardError.class)))
-                }))
+                })),
+    @RouterOperation(
+        path = "/api/v1/bootcamp/exists",
+        method = RequestMethod.GET,
+        beanClass = BootcampHandler.class,
+        beanMethod = "bootcampsExists",
+        operation =
+            @Operation(
+                operationId = "bootcampsExists",
+                summary = "Check if bootcamps exist",
+                parameters = {
+                  @Parameter(
+                      in = ParameterIn.QUERY,
+                      name = "id",
+                      description = "Bootcamp IDs to check existence",
+                      required = true,
+                      array = @ArraySchema(schema = @Schema(type = "string", example = "1")))
+                },
+                responses = {
+                  @ApiResponse(
+                      responseCode = "200",
+                      description = "Existence check completed.",
+                      content =
+                          @Content(
+                              mediaType = MediaType.APPLICATION_JSON_VALUE,
+                              schema =
+                                  @Schema(
+                                      implementation =
+                                          SwaggerResponses.DefaultBooleanResponse.class))),
+                  @ApiResponse(
+                      responseCode = "400",
+                      description = Constants.BAD_REQUEST_MSG,
+                      content =
+                          @Content(
+                              mediaType = MediaType.APPLICATION_JSON_VALUE,
+                              schema = @Schema(implementation = StandardError.class))),
+                  @ApiResponse(
+                      responseCode = "500",
+                      description = Constants.SERVER_ERROR_MSG,
+                      content =
+                          @Content(
+                              mediaType = MediaType.APPLICATION_JSON_VALUE,
+                              schema = @Schema(implementation = StandardError.class)))
+                })),
   })
   public RouterFunction<ServerResponse> routerFunction(BootcampHandler bootcampHandler) {
     return nest(
         path("/api/v1/bootcamp"),
         route(RequestPredicates.POST(""), bootcampHandler::createBootcamp)
             .andRoute(RequestPredicates.GET(""), bootcampHandler::getBootcamps)
-            .andRoute(RequestPredicates.DELETE("/{id}"), bootcampHandler::deleteBootcamp));
+            .andRoute(RequestPredicates.DELETE("/{id}"), bootcampHandler::deleteBootcamp)
+            .andRoute(RequestPredicates.GET("/exists"), bootcampHandler::exists));
   }
 }
