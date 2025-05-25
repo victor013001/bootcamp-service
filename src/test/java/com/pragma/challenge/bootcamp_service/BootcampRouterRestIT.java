@@ -22,6 +22,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -109,12 +110,14 @@ public class BootcampRouterRestIT {
         .exchange()
         .expectStatus()
         .isBadRequest()
-        .expectBody(StandardError.class)
+        .expectBody(
+            new ParameterizedTypeReference<DefaultServerResponse<Object, StandardError>>() {})
         .consumeWith(
             exchangeResult -> {
-              var error = exchangeResult.getResponseBody();
-              assertNotNull(error);
-              assertEquals(ServerResponses.BAD_REQUEST.getMessage(), error.getDescription());
+              var response = exchangeResult.getResponseBody();
+              assertNotNull(response);
+              assertEquals(
+                  ServerResponses.BAD_REQUEST.getMessage(), response.error().getDescription());
             });
   }
 
@@ -135,12 +138,15 @@ public class BootcampRouterRestIT {
         .exchange()
         .expectStatus()
         .isNotFound()
-        .expectBody(StandardError.class)
+        .expectBody(
+            new ParameterizedTypeReference<DefaultServerResponse<Object, StandardError>>() {})
         .consumeWith(
             exchangeResult -> {
-              var error = exchangeResult.getResponseBody();
-              assertNotNull(error);
-              assertEquals(ServerResponses.PROFILE_NOT_FOUND.getMessage(), error.getDescription());
+              var response = exchangeResult.getResponseBody();
+              assertNotNull(response);
+              assertEquals(
+                  ServerResponses.PROFILE_NOT_FOUND.getMessage(),
+                  response.error().getDescription());
             });
   }
 
