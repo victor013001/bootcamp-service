@@ -1,9 +1,8 @@
-package com.pragma.challenge.bootcamp_service.infrastructure.adapters.report_service;
+package com.pragma.challenge.bootcamp_service.infrastructure.adapters.user_service;
 
 import com.pragma.challenge.bootcamp_service.domain.exceptions.standard_exception.GatewayBadRequest;
 import com.pragma.challenge.bootcamp_service.domain.exceptions.standard_exception.GatewayError;
-import com.pragma.challenge.bootcamp_service.domain.model.BootcampReport;
-import com.pragma.challenge.bootcamp_service.domain.spi.ReportServiceGateway;
+import com.pragma.challenge.bootcamp_service.domain.spi.UserServiceGateway;
 import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.dto.DefaultServerResponse;
 import io.github.resilience4j.bulkhead.Bulkhead;
 import io.github.resilience4j.reactor.retry.RetryOperator;
@@ -18,48 +17,42 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
-public class ReportServiceAdapter implements ReportServiceGateway {
-  private static final String LOG_PREFIX = "[REPORT_SERVICE_GATEWAY] >>>";
+public class UserServiceAdapter implements UserServiceGateway {
+  private static final String LOG_PREFIX = "[USER_SERVICE_GATEWAY] >>>";
 
-  private final String BASE_PATH = "api/v1/report";
+  private final String BASE_PATH = "api/v1/user";
 
   private final WebClient webClient;
   private final Retry retry;
   private final Bulkhead bulkhead;
 
-  public ReportServiceAdapter(
-      @Qualifier("reportServiceWebClient") WebClient webClient,
-      @Qualifier("reportServiceRetryPolicy") Retry retry,
-      @Qualifier("reportServiceBulkhead") Bulkhead bulkhead) {
+  public UserServiceAdapter(
+      @Qualifier("userServiceWebClient") WebClient webClient,
+      @Qualifier("userServiceRetryPolicy") Retry retry,
+      @Qualifier("userServiceBulkhead") Bulkhead bulkhead) {
     this.webClient = webClient;
     this.retry = retry;
     this.bulkhead = bulkhead;
   }
 
   @Override
-  public Mono<Void> registerBootcampReport(BootcampReport bootcampReport) {
+  public Mono<Long> getBootcampWithHigherNumberUsers() {
     log.info(
-        "{} Starting report creation for bootcamp id: {} in Report Service.",
-        LOG_PREFIX,
-        bootcampReport.bootcampId());
+        "{} Starting get bootcamp id with higher number of users process in User Service.",
+        LOG_PREFIX);
     return webClient
-        .post()
+        .get()
         .uri(uriBuilder -> uriBuilder.path(BASE_PATH + "/bootcamp").build())
-        .bodyValue(bootcampReport)
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.error(GatewayBadRequest::new))
         .onStatus(HttpStatusCode::is5xxServerError, response -> Mono.error(GatewayError::new))
-        .bodyToMono(new ParameterizedTypeReference<DefaultServerResponse<String>>() {})
+        .bodyToMono(new ParameterizedTypeReference<DefaultServerResponse<Long>>() {})
         .map(DefaultServerResponse::data)
-        .doOnNext(exists -> log.info("{} Received Report Service response.", LOG_PREFIX))
+        .doOnNext(exists -> log.info("{} Received User Service response.", LOG_PREFIX))
         .transformDeferred(RetryOperator.of(retry))
         .transformDeferred(mono -> Mono.defer(() -> bulkhead.executeSupplier(() -> mono)))
         .doOnTerminate(
-            () -> log.info("{} Completed report creation process in Report Service.", LOG_PREFIX))
-        .doOnError(
-            ignore ->
-                log.error(
-                    "{} Error calling Report Service with request: {}", LOG_PREFIX, bootcampReport))
-        .then();
+            () -> log.info("{} Completed get bootcamp id process in User Service.", LOG_PREFIX))
+        .doOnError(ignore -> log.error("{} Error calling User Service", LOG_PREFIX));
   }
 }

@@ -14,4 +14,6 @@ public interface BootcampPersistencePort {
   Mono<Void> delete(Long bootcampId);
 
   Mono<Boolean> existsById(Long bootcampId);
+
+  Mono<BootcampProfile> getBootcampById(Long bootcampId);
 }

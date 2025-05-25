@@ -12,4 +12,6 @@ public interface BootcampHandler {
   Mono<ServerResponse> deleteBootcamp(ServerRequest request);
 
   Mono<ServerResponse> exists(ServerRequest request);
+
+  Mono<ServerResponse> getBootcampUser(ServerRequest request);
 }

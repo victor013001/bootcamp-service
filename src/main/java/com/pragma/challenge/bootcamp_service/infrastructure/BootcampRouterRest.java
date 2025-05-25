@@ -211,6 +211,7 @@ public class BootcampRouterRest {
         route(RequestPredicates.POST(""), bootcampHandler::createBootcamp)
             .andRoute(RequestPredicates.GET(""), bootcampHandler::getBootcamps)
             .andRoute(RequestPredicates.DELETE("/{id}"), bootcampHandler::deleteBootcamp)
-            .andRoute(RequestPredicates.GET("/exists"), bootcampHandler::exists));
+            .andRoute(RequestPredicates.GET("/exists"), bootcampHandler::exists)
+            .andRoute(RequestPredicates.GET("/user"), bootcampHandler::getBootcampUser));
   }
 }

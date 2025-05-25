@@ -15,4 +15,6 @@ public interface BootcampServicePort {
   Mono<Void> delete(Long bootcampId);
 
   Mono<Boolean> existsById(List<Long> bootcampIds);
+
+  Mono<BootcampProfile> getBootcampUser();
 }
