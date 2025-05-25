@@ -13,8 +13,8 @@ import io.github.resilience4j.reactor.retry.RetryOperator;
 import io.github.resilience4j.retry.Retry;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -26,7 +26,6 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class ProfileServiceAdapter implements ProfileServiceGateway {
   private static final String LOG_PREFIX = "[PROFILE_SERVICE_GATEWAY] >>>";
 
@@ -35,6 +34,15 @@ public class ProfileServiceAdapter implements ProfileServiceGateway {
   private final WebClient webClient;
   private final Retry retry;
   private final Bulkhead bulkhead;
+
+  public ProfileServiceAdapter(
+      @Qualifier("webClient") WebClient webClient,
+      @Qualifier("retryPolicy") Retry retry,
+      @Qualifier("profileServiceBulkhead") Bulkhead bulkhead) {
+    this.webClient = webClient;
+    this.retry = retry;
+    this.bulkhead = bulkhead;
+  }
 
   @Override
   @CircuitBreaker(name = "profileService", fallbackMethod = "fallback")

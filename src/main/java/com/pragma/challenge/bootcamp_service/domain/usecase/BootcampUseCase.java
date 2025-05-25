@@ -7,16 +7,22 @@ import com.pragma.challenge.bootcamp_service.domain.model.Bootcamp;
 import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfile;
 import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfileRelation;
 import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfiles;
+import com.pragma.challenge.bootcamp_service.domain.model.BootcampReport;
+import com.pragma.challenge.bootcamp_service.domain.model.ProfileTechnology;
 import com.pragma.challenge.bootcamp_service.domain.spi.BootcampPersistencePort;
 import com.pragma.challenge.bootcamp_service.domain.spi.ProfileServiceGateway;
+import com.pragma.challenge.bootcamp_service.domain.spi.ReportServiceGateway;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class BootcampUseCase implements BootcampServicePort {
@@ -25,10 +31,22 @@ public class BootcampUseCase implements BootcampServicePort {
   private final ProfileServiceGateway profileServiceGateway;
   private final TransactionalOperator transactionalOperator;
   private final BootcampProfileMapper bootcampProfileMapper;
+  private final ReportServiceGateway reportServiceGateway;
 
   @Override
   public Mono<Bootcamp> registerBootcamp(Bootcamp bootcamp) {
-    return registerWithProfiles(bootcamp).as(transactionalOperator::transactional);
+    return registerWithProfiles(bootcamp)
+        .as(transactionalOperator::transactional)
+        .doOnSuccess(
+            bootcampSaved ->
+                createReport(bootcampSaved)
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .subscribe(
+                        null,
+                        ex ->
+                            log.error(
+                                "Unable to create report for bootcamp with id: {}",
+                                bootcampSaved.id())));
   }
 
   @Override
@@ -87,5 +105,30 @@ public class BootcampUseCase implements BootcampServicePort {
             profileIds.stream()
                 .map(profileId -> new BootcampProfileRelation(bootcampId, profileId))
                 .toList()));
+  }
+
+  private Mono<Void> createReport(Bootcamp bootcamp) {
+    return profileServiceGateway
+        .getProfiles(bootcamp.id())
+        .flatMap(
+            profileTechnologies ->
+                reportServiceGateway.registerBootcampReport(
+                    new BootcampReport(
+                        bootcamp.id(),
+                        bootcamp.name(),
+                        bootcamp.description(),
+                        bootcamp.launchDate(),
+                        bootcamp.durationInWeeks(),
+                        profileTechnologies.size(),
+                        technologiesSize(profileTechnologies),
+                        0)));
+  }
+
+  private int technologiesSize(List<ProfileTechnology> profileTechnologies) {
+    return Math.toIntExact(
+        profileTechnologies.stream()
+            .flatMap(profileTechnology -> profileTechnology.technologies().stream())
+            .distinct()
+            .count());
   }
 }

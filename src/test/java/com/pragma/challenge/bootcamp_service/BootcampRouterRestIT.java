@@ -34,6 +34,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 public class BootcampRouterRestIT {
   private final String BASE_PATH = "/api/v1/bootcamp";
   private final String PROFILE_SERVICE_PATH = "/api/v1/profile";
+  private final String REPORT_SERVICE_PATH = "/api/v1/report";
 
   @Autowired WebTestClient webTestClient;
   @Autowired BootcampRepository bootcampRepository;
@@ -68,6 +69,20 @@ public class BootcampRouterRestIT {
                 WireMock.aResponse()
                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .withBodyFile("bootcampProfileRelationSuccess.json")));
+
+    WireMock.stubFor(
+        WireMock.get(WireMock.urlPathEqualTo(PROFILE_SERVICE_PATH))
+            .withQueryParam(Constants.BOOTCAMP_ID_PARAM, WireMock.matching(".*"))
+            .willReturn(
+                WireMock.aResponse()
+                    .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .withBodyFile("profileByBootcampId.json")));
+
+    WireMock.stubFor(
+        WireMock.post(WireMock.urlEqualTo(REPORT_SERVICE_PATH + "/bootcamp"))
+            .willReturn(
+                WireMock.aResponse()
+                    .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)));
 
     webTestClient
         .post()
