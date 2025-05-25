@@ -124,4 +124,14 @@ public class BootcampHandlerImpl implements BootcampHandler {
                 ServerResponse.status(HttpStatus.OK)
                     .bodyValue(defaultServerResponseMapper.toResponse(exists)));
   }
+
+  @Override
+  public Mono<ServerResponse> getBootcampUser(ServerRequest request) {
+    return bootcampServicePort
+        .getBootcampUser()
+        .flatMap(
+            bootcampProfile ->
+                ServerResponse.status(HttpStatus.OK)
+                    .bodyValue(defaultServerResponseMapper.toResponse(bootcampProfile)));
+  }
 }

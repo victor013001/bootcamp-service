@@ -12,6 +12,7 @@ import com.pragma.challenge.bootcamp_service.domain.model.ProfileTechnology;
 import com.pragma.challenge.bootcamp_service.domain.spi.BootcampPersistencePort;
 import com.pragma.challenge.bootcamp_service.domain.spi.ProfileServiceGateway;
 import com.pragma.challenge.bootcamp_service.domain.spi.ReportServiceGateway;
+import com.pragma.challenge.bootcamp_service.domain.spi.UserServiceGateway;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ public class BootcampUseCase implements BootcampServicePort {
   private final TransactionalOperator transactionalOperator;
   private final BootcampProfileMapper bootcampProfileMapper;
   private final ReportServiceGateway reportServiceGateway;
+  private final UserServiceGateway userServiceGateway;
 
   @Override
   public Mono<Bootcamp> registerBootcamp(Bootcamp bootcamp) {
@@ -80,6 +82,24 @@ public class BootcampUseCase implements BootcampServicePort {
         .flatMap(id -> bootcampPersistencePort.existsById(id).flatMap(Mono::just))
         .any(result -> !result)
         .flatMap(foundFalse -> Mono.just(!foundFalse));
+  }
+
+  @Override
+  public Mono<BootcampProfile> getBootcampUser() {
+    return userServiceGateway
+        .getBootcampWithHigherNumberUsers()
+        .flatMap(
+            bootcampId ->
+                bootcampPersistencePort
+                    .getBootcampById(bootcampId)
+                    .flatMap(
+                        bootcampProfile ->
+                            profileServiceGateway
+                                .getProfiles(bootcampProfile.id())
+                                .map(
+                                    profiles ->
+                                        bootcampProfileMapper.toBootcampProfileWithProfiles(
+                                            bootcampProfile, profiles))));
   }
 
   private Mono<Bootcamp> registerWithProfiles(Bootcamp bootcamp) {
