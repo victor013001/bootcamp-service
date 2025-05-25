@@ -1,6 +1,7 @@
 package com.pragma.challenge.bootcamp_service.infrastructure.adapters.profile_service;
 
 import com.pragma.challenge.bootcamp_service.domain.constants.Constants;
+import com.pragma.challenge.bootcamp_service.domain.exceptions.StandardError;
 import com.pragma.challenge.bootcamp_service.domain.exceptions.standard_exception.GatewayBadRequest;
 import com.pragma.challenge.bootcamp_service.domain.exceptions.standard_exception.GatewayError;
 import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfiles;
@@ -62,7 +63,8 @@ public class ProfileServiceAdapter implements ProfileServiceGateway {
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.error(GatewayBadRequest::new))
         .onStatus(HttpStatusCode::is5xxServerError, response -> Mono.error(GatewayError::new))
-        .bodyToMono(new ParameterizedTypeReference<DefaultServerResponse<Boolean>>() {})
+        .bodyToMono(
+            new ParameterizedTypeReference<DefaultServerResponse<Boolean, StandardError>>() {})
         .map(DefaultServerResponse::data)
         .doOnNext(exists -> log.info("{} Received Profile Service response.", LOG_PREFIX))
         .transformDeferred(RetryOperator.of(retry))
@@ -88,7 +90,8 @@ public class ProfileServiceAdapter implements ProfileServiceGateway {
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.error(GatewayBadRequest::new))
         .onStatus(HttpStatusCode::is5xxServerError, response -> Mono.error(GatewayError::new))
-        .bodyToMono(new ParameterizedTypeReference<DefaultServerResponse<String>>() {})
+        .bodyToMono(
+            new ParameterizedTypeReference<DefaultServerResponse<String, StandardError>>() {})
         .map(DefaultServerResponse::data)
         .doOnNext(
             exists -> log.info("{} Received Profile Service response: {}", LOG_PREFIX, exists))
@@ -124,7 +127,8 @@ public class ProfileServiceAdapter implements ProfileServiceGateway {
         .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.error(GatewayBadRequest::new))
         .onStatus(HttpStatusCode::is5xxServerError, response -> Mono.error(GatewayError::new))
         .bodyToMono(
-            new ParameterizedTypeReference<DefaultServerResponse<List<ProfileTechnology>>>() {})
+            new ParameterizedTypeReference<
+                DefaultServerResponse<List<ProfileTechnology>, StandardError>>() {})
         .map(DefaultServerResponse::data)
         .transformDeferred(RetryOperator.of(retry))
         .transformDeferred(mono -> Mono.defer(() -> bulkhead.executeSupplier(() -> mono)))
@@ -153,7 +157,8 @@ public class ProfileServiceAdapter implements ProfileServiceGateway {
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.error(GatewayBadRequest::new))
         .onStatus(HttpStatusCode::is5xxServerError, response -> Mono.error(GatewayError::new))
-        .bodyToMono(new ParameterizedTypeReference<DefaultServerResponse<String>>() {})
+        .bodyToMono(
+            new ParameterizedTypeReference<DefaultServerResponse<String, StandardError>>() {})
         .map(DefaultServerResponse::data)
         .doOnNext(
             exists -> log.info("{} Received Profile Service response: {}", LOG_PREFIX, exists))

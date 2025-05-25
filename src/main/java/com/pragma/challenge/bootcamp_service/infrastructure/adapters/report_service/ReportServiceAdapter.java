@@ -1,5 +1,6 @@
 package com.pragma.challenge.bootcamp_service.infrastructure.adapters.report_service;
 
+import com.pragma.challenge.bootcamp_service.domain.exceptions.StandardError;
 import com.pragma.challenge.bootcamp_service.domain.exceptions.standard_exception.GatewayBadRequest;
 import com.pragma.challenge.bootcamp_service.domain.exceptions.standard_exception.GatewayError;
 import com.pragma.challenge.bootcamp_service.domain.model.BootcampReport;
@@ -49,7 +50,8 @@ public class ReportServiceAdapter implements ReportServiceGateway {
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.error(GatewayBadRequest::new))
         .onStatus(HttpStatusCode::is5xxServerError, response -> Mono.error(GatewayError::new))
-        .bodyToMono(new ParameterizedTypeReference<DefaultServerResponse<String>>() {})
+        .bodyToMono(
+            new ParameterizedTypeReference<DefaultServerResponse<String, StandardError>>() {})
         .map(DefaultServerResponse::data)
         .doOnNext(exists -> log.info("{} Received Report Service response.", LOG_PREFIX))
         .transformDeferred(RetryOperator.of(retry))

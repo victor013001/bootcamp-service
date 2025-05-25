@@ -5,7 +5,6 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.n
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 import com.pragma.challenge.bootcamp_service.domain.constants.Constants;
-import com.pragma.challenge.bootcamp_service.domain.exceptions.StandardError;
 import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.dto.BootcampDto;
 import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.handler.BootcampHandler;
 import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.util.SwaggerResponses;
@@ -64,14 +63,20 @@ public class BootcampRouterRest {
                       content =
                           @Content(
                               mediaType = MediaType.APPLICATION_JSON_VALUE,
-                              schema = @Schema(implementation = StandardError.class))),
+                              schema =
+                                  @Schema(
+                                      implementation =
+                                          SwaggerResponses.DefaultErrorResponse.class))),
                   @ApiResponse(
                       responseCode = "500",
                       description = Constants.SERVER_ERROR_MSG,
                       content =
                           @Content(
                               mediaType = MediaType.APPLICATION_JSON_VALUE,
-                              schema = @Schema(implementation = StandardError.class)))
+                              schema =
+                                  @Schema(
+                                      implementation =
+                                          SwaggerResponses.DefaultErrorResponse.class)))
                 })),
     @RouterOperation(
         path = "/api/v1/bootcamp",
@@ -117,7 +122,10 @@ public class BootcampRouterRest {
                       content =
                           @Content(
                               mediaType = MediaType.APPLICATION_JSON_VALUE,
-                              schema = @Schema(implementation = StandardError.class)))
+                              schema =
+                                  @Schema(
+                                      implementation =
+                                          SwaggerResponses.DefaultErrorResponse.class)))
                 })),
     @RouterOperation(
         path = "/api/v1/bootcamp/{id}",
@@ -152,14 +160,20 @@ public class BootcampRouterRest {
                       content =
                           @Content(
                               mediaType = MediaType.APPLICATION_JSON_VALUE,
-                              schema = @Schema(implementation = StandardError.class))),
+                              schema =
+                                  @Schema(
+                                      implementation =
+                                          SwaggerResponses.DefaultErrorResponse.class))),
                   @ApiResponse(
                       responseCode = "500",
                       description = Constants.SERVER_ERROR_MSG,
                       content =
                           @Content(
                               mediaType = MediaType.APPLICATION_JSON_VALUE,
-                              schema = @Schema(implementation = StandardError.class)))
+                              schema =
+                                  @Schema(
+                                      implementation =
+                                          SwaggerResponses.DefaultErrorResponse.class)))
                 })),
     @RouterOperation(
         path = "/api/v1/bootcamp/exists",
@@ -195,15 +209,61 @@ public class BootcampRouterRest {
                       content =
                           @Content(
                               mediaType = MediaType.APPLICATION_JSON_VALUE,
-                              schema = @Schema(implementation = StandardError.class))),
+                              schema =
+                                  @Schema(
+                                      implementation =
+                                          SwaggerResponses.DefaultErrorResponse.class))),
                   @ApiResponse(
                       responseCode = "500",
                       description = Constants.SERVER_ERROR_MSG,
                       content =
                           @Content(
                               mediaType = MediaType.APPLICATION_JSON_VALUE,
-                              schema = @Schema(implementation = StandardError.class)))
+                              schema =
+                                  @Schema(
+                                      implementation =
+                                          SwaggerResponses.DefaultErrorResponse.class)))
                 })),
+    @RouterOperation(
+        path = "/api/v1/bootcamp/user",
+        method = RequestMethod.GET,
+        beanClass = BootcampHandler.class,
+        beanMethod = "getBootcampUser",
+        operation =
+            @Operation(
+                operationId = "getBootcampUser",
+                summary = "Get Bootcamp with higher number of users",
+                responses = {
+                  @ApiResponse(
+                      responseCode = "200",
+                      content =
+                          @Content(
+                              mediaType = MediaType.APPLICATION_JSON_VALUE,
+                              schema =
+                                  @Schema(
+                                      implementation =
+                                          SwaggerResponses.DefaultBootcampProfileResponse.class))),
+                  @ApiResponse(
+                      responseCode = "400",
+                      description = Constants.BAD_REQUEST_MSG,
+                      content =
+                          @Content(
+                              mediaType = MediaType.APPLICATION_JSON_VALUE,
+                              schema =
+                                  @Schema(
+                                      implementation =
+                                          SwaggerResponses.DefaultErrorResponse.class))),
+                  @ApiResponse(
+                      responseCode = "500",
+                      description = Constants.SERVER_ERROR_MSG,
+                      content =
+                          @Content(
+                              mediaType = MediaType.APPLICATION_JSON_VALUE,
+                              schema =
+                                  @Schema(
+                                      implementation =
+                                          SwaggerResponses.DefaultErrorResponse.class)))
+                }))
   })
   public RouterFunction<ServerResponse> routerFunction(BootcampHandler bootcampHandler) {
     return nest(

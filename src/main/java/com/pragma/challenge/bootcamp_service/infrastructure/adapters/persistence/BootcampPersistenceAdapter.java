@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -20,6 +21,7 @@ public class BootcampPersistenceAdapter implements BootcampPersistencePort {
 
   private final BootcampRepository bootcampRepository;
   private final BootcampEntityMapper bootcampEntityMapper;
+  private final TransactionalOperator transactionalOperator;
 
   @Override
   public Mono<Bootcamp> save(Bootcamp bootcamp) {

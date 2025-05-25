@@ -1,5 +1,6 @@
 package com.pragma.challenge.bootcamp_service.infrastructure.adapters.user_service;
 
+import com.pragma.challenge.bootcamp_service.domain.exceptions.StandardError;
 import com.pragma.challenge.bootcamp_service.domain.exceptions.standard_exception.GatewayBadRequest;
 import com.pragma.challenge.bootcamp_service.domain.exceptions.standard_exception.GatewayError;
 import com.pragma.challenge.bootcamp_service.domain.spi.UserServiceGateway;
@@ -46,7 +47,7 @@ public class UserServiceAdapter implements UserServiceGateway {
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.error(GatewayBadRequest::new))
         .onStatus(HttpStatusCode::is5xxServerError, response -> Mono.error(GatewayError::new))
-        .bodyToMono(new ParameterizedTypeReference<DefaultServerResponse<Long>>() {})
+        .bodyToMono(new ParameterizedTypeReference<DefaultServerResponse<Long, StandardError>>() {})
         .map(DefaultServerResponse::data)
         .doOnNext(exists -> log.info("{} Received User Service response.", LOG_PREFIX))
         .transformDeferred(RetryOperator.of(retry))

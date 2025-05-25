@@ -1,13 +1,20 @@
 package com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.handler.impl;
 
+import static com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.util.ResponseUtil.buildResponse;
+import static com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.util.ResponseUtil.buildStandardError;
+
 import com.pragma.challenge.bootcamp_service.domain.api.BootcampServicePort;
 import com.pragma.challenge.bootcamp_service.domain.constants.Constants;
 import com.pragma.challenge.bootcamp_service.domain.enums.ServerResponses;
+import com.pragma.challenge.bootcamp_service.domain.exceptions.StandardException;
+import com.pragma.challenge.bootcamp_service.domain.exceptions.standard_exception.BadRequest;
 import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.dto.BootcampDto;
 import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.handler.BootcampHandler;
 import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.mapper.BootcampMapper;
 import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.mapper.DefaultServerResponseMapper;
-import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.util.RequestValidator;
+import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.util.ParseUtil;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -26,14 +33,13 @@ public class BootcampHandlerImpl implements BootcampHandler {
 
   private final BootcampServicePort bootcampServicePort;
   private final BootcampMapper bootcampMapper;
-  private final RequestValidator requestValidator;
   private final DefaultServerResponseMapper defaultServerResponseMapper;
 
   @Override
   public Mono<ServerResponse> createBootcamp(ServerRequest request) {
     return request
         .bodyToMono(BootcampDto.class)
-        .flatMap(requestValidator::validate)
+        .switchIfEmpty(Mono.error(BadRequest::new))
         .flatMap(
             bootcampDto -> {
               log.info(
@@ -56,10 +62,14 @@ public class BootcampHandlerImpl implements BootcampHandler {
             })
         .flatMap(
             ignore ->
-                ServerResponse.status(ServerResponses.BOOTCAMP_CREATED.getHttpStatus())
-                    .bodyValue(
-                        defaultServerResponseMapper.toResponse(
-                            ServerResponses.BOOTCAMP_CREATED.getMessage())));
+                buildResponse(
+                    ServerResponses.BOOTCAMP_CREATED.getHttpStatus(),
+                    ServerResponses.BOOTCAMP_CREATED.getMessage(),
+                    null,
+                    defaultServerResponseMapper))
+        .doOnError(logErrorHandler())
+        .onErrorResume(StandardException.class, standardErrorHandler())
+        .onErrorResume(genericErrorHandler());
   }
 
   @Override
@@ -78,34 +88,41 @@ public class BootcampHandlerImpl implements BootcampHandler {
     return bootcampServicePort
         .getBootcamps(
             PageRequest.of(
-                requestValidator.toInt(pageNumber),
-                requestValidator.toInt(pageSize),
+                ParseUtil.toInt(pageNumber),
+                ParseUtil.toInt(pageSize),
                 Sort.by(
-                    requestValidator.toSortDirection(sortDirectionParam),
-                    requestValidator.validate(sortByParam))))
+                    ParseUtil.toSortDirection(sortDirectionParam),
+                    ParseUtil.validate(sortByParam))))
         .collectList()
         .flatMap(
             bootcampProfile -> {
               log.info("{} Bootcamp page: {} with size: {}", LOG_PREFIX, pageNumber, pageSize);
-              return ServerResponse.status(HttpStatus.OK)
-                  .bodyValue(defaultServerResponseMapper.toResponse(bootcampProfile));
-            });
+              return buildResponse(
+                  HttpStatus.OK, bootcampProfile, null, defaultServerResponseMapper);
+            })
+        .doOnError(logErrorHandler())
+        .onErrorResume(StandardException.class, standardErrorHandler())
+        .onErrorResume(genericErrorHandler());
   }
 
   @Override
   public Mono<ServerResponse> deleteBootcamp(ServerRequest request) {
     String id = request.pathVariable(Constants.ID_PATH_VARIABLE);
-    return Mono.just(requestValidator.toLong(id))
+    return Mono.just(ParseUtil.toLong(id))
         .flatMap(
             bootcampId -> {
               log.info("{} Deleting bootcamp with id: {}.", LOG_PREFIX, bootcampId);
               return bootcampServicePort.delete(bootcampId);
             })
         .then(
-            ServerResponse.status(ServerResponses.BOOTCAMP_DELETED.getHttpStatus())
-                .bodyValue(
-                    defaultServerResponseMapper.toResponse(
-                        ServerResponses.BOOTCAMP_DELETED.getMessage())));
+            buildResponse(
+                ServerResponses.BOOTCAMP_DELETED.getHttpStatus(),
+                ServerResponses.BOOTCAMP_DELETED.getMessage(),
+                null,
+                defaultServerResponseMapper))
+        .doOnError(logErrorHandler())
+        .onErrorResume(StandardException.class, standardErrorHandler())
+        .onErrorResume(genericErrorHandler());
   }
 
   @Override
@@ -119,10 +136,10 @@ public class BootcampHandlerImpl implements BootcampHandler {
               log.info("{} Checking if bootcamps with ids {} exist.", LOG_PREFIX, bootcampIds);
               return bootcampServicePort.existsById(bootcampIds);
             })
-        .flatMap(
-            exists ->
-                ServerResponse.status(HttpStatus.OK)
-                    .bodyValue(defaultServerResponseMapper.toResponse(exists)));
+        .flatMap(exists -> buildResponse(HttpStatus.OK, exists, null, defaultServerResponseMapper))
+        .doOnError(logErrorHandler())
+        .onErrorResume(StandardException.class, standardErrorHandler())
+        .onErrorResume(genericErrorHandler());
   }
 
   @Override
@@ -131,7 +148,32 @@ public class BootcampHandlerImpl implements BootcampHandler {
         .getBootcampUser()
         .flatMap(
             bootcampProfile ->
-                ServerResponse.status(HttpStatus.OK)
-                    .bodyValue(defaultServerResponseMapper.toResponse(bootcampProfile)));
+                buildResponse(HttpStatus.OK, bootcampProfile, null, defaultServerResponseMapper))
+        .doOnError(logErrorHandler())
+        .onErrorResume(StandardException.class, standardErrorHandler())
+        .onErrorResume(genericErrorHandler());
+  }
+
+  private Consumer<Throwable> logErrorHandler() {
+    return ex ->
+        log.error(
+            "{} Exception {} caught. Caused by: {}",
+            LOG_PREFIX,
+            ex.getClass().getSimpleName(),
+            ex.getMessage());
+  }
+
+  private Function<StandardException, Mono<ServerResponse>> standardErrorHandler() {
+    return ex ->
+        buildResponse(ex.getHttpStatus(), null, ex.getStandardError(), defaultServerResponseMapper);
+  }
+
+  private Function<Throwable, Mono<ServerResponse>> genericErrorHandler() {
+    return ex ->
+        buildResponse(
+            ServerResponses.SERVER_ERROR.getHttpStatus(),
+            null,
+            buildStandardError(ServerResponses.SERVER_ERROR),
+            defaultServerResponseMapper);
   }
 }

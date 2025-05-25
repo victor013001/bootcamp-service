@@ -1,5 +1,6 @@
 package com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.util;
 
+import com.pragma.challenge.bootcamp_service.domain.exceptions.StandardError;
 import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfile;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -30,5 +31,12 @@ public final class SwaggerResponses {
   @AllArgsConstructor
   public static class DefaultBooleanResponse {
     private Boolean data;
+  }
+
+  @Data
+  @Schema(name = "DefaultErrorResponse")
+  @AllArgsConstructor
+  public static class DefaultErrorResponse {
+    private StandardError error;
   }
 }
