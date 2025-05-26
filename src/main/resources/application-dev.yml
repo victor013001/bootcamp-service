@@ -43,7 +43,7 @@ profile-service:
   timeout: 1000
 
 report-service:
-  base-url: http://localhost:8080/report-service/
+  base-url: http://localhost:8085/report-service/
   timeout: 1000
 
 user-service:

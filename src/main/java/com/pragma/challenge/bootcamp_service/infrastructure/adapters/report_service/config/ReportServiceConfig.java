@@ -3,7 +3,7 @@ package com.pragma.challenge.bootcamp_service.infrastructure.adapters.report_ser
 import static io.netty.channel.ChannelOption.CONNECT_TIMEOUT_MILLIS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-import com.pragma.challenge.bootcamp_service.infrastructure.adapters.profile_service.util.ProfileServiceProperties;
+import com.pragma.challenge.bootcamp_service.infrastructure.adapters.report_service.util.ReportServiceProperties;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import java.time.Duration;
@@ -21,16 +21,16 @@ import reactor.netty.http.client.HttpClient;
 @RequiredArgsConstructor
 public class ReportServiceConfig {
 
-  private final ProfileServiceProperties profileServiceProperties;
+  private final ReportServiceProperties reportServiceProperties;
 
   @Bean
   public WebClient reportServiceWebClient() {
     return WebClient.builder()
-        .baseUrl(profileServiceProperties.getBaseUrl())
+        .baseUrl(reportServiceProperties.getBaseUrl())
         .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
         .clientConnector(
-            getClientHttpConnector(Integer.parseInt(profileServiceProperties.getTimeout())))
+            getClientHttpConnector(Integer.parseInt(reportServiceProperties.getTimeout())))
         .build();
   }
 

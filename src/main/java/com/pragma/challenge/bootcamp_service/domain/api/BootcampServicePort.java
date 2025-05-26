@@ -2,6 +2,7 @@ package com.pragma.challenge.bootcamp_service.domain.api;
 
 import com.pragma.challenge.bootcamp_service.domain.model.Bootcamp;
 import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfile;
+import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfileUser;
 import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import reactor.core.publisher.Flux;
@@ -16,5 +17,5 @@ public interface BootcampServicePort {
 
   Mono<Boolean> existsById(List<Long> bootcampIds);
 
-  Mono<BootcampProfile> getBootcampUser();
+  Mono<BootcampProfileUser> getBootcampUser();
 }
