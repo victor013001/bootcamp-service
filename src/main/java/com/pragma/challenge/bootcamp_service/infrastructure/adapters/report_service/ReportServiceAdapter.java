@@ -7,8 +7,10 @@ import com.pragma.challenge.bootcamp_service.domain.model.BootcampReport;
 import com.pragma.challenge.bootcamp_service.domain.spi.ReportServiceGateway;
 import com.pragma.challenge.bootcamp_service.infrastructure.entrypoints.dto.DefaultServerResponse;
 import io.github.resilience4j.bulkhead.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.reactor.retry.RetryOperator;
 import io.github.resilience4j.retry.Retry;
+import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
@@ -38,6 +40,7 @@ public class ReportServiceAdapter implements ReportServiceGateway {
   }
 
   @Override
+  @CircuitBreaker(name = "reportService", fallbackMethod = "fallback")
   public Mono<Void> registerBootcampReport(BootcampReport bootcampReport) {
     log.info(
         "{} Starting report creation for bootcamp id: {} in Report Service.",
@@ -63,5 +66,11 @@ public class ReportServiceAdapter implements ReportServiceGateway {
                 log.error(
                     "{} Error calling Report Service with request: {}", LOG_PREFIX, bootcampReport))
         .then();
+  }
+
+  public Mono<Boolean> fallback(Throwable t) {
+    log.warn("{} Fallback triggered for Report Service", LOG_PREFIX);
+    return Mono.defer(() -> Mono.justOrEmpty(t instanceof TimeoutException ? Boolean.FALSE : null))
+        .switchIfEmpty(Mono.error(t));
   }
 }

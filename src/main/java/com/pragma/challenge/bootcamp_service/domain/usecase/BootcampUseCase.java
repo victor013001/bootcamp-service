@@ -6,6 +6,7 @@ import com.pragma.challenge.bootcamp_service.domain.mapper.BootcampProfileMapper
 import com.pragma.challenge.bootcamp_service.domain.model.Bootcamp;
 import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfile;
 import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfileRelation;
+import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfileUser;
 import com.pragma.challenge.bootcamp_service.domain.model.BootcampProfiles;
 import com.pragma.challenge.bootcamp_service.domain.model.BootcampReport;
 import com.pragma.challenge.bootcamp_service.domain.model.ProfileTechnology;
@@ -88,7 +89,7 @@ public class BootcampUseCase implements BootcampServicePort {
   }
 
   @Override
-  public Mono<BootcampProfile> getBootcampUser() {
+  public Mono<BootcampProfileUser> getBootcampUser() {
     return userServiceGateway
         .getBootcampWithHigherNumberUsers()
         .flatMap(
@@ -102,7 +103,15 @@ public class BootcampUseCase implements BootcampServicePort {
                                 .map(
                                     profiles ->
                                         bootcampProfileMapper.toBootcampProfileWithProfiles(
-                                            bootcampProfile, profiles))));
+                                            bootcampProfile, profiles))))
+        .flatMap(
+            bootcampProfile ->
+                userServiceGateway
+                    .getBootcampUsers(bootcampProfile.id())
+                    .map(
+                        users ->
+                            bootcampProfileMapper.toBootcampProfileUserWithUsers(
+                                bootcampProfile, users)));
   }
 
   private Mono<Bootcamp> registerWithProfiles(Bootcamp bootcamp) {
